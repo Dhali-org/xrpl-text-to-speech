@@ -63,9 +63,9 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getInferenceScaffold() {
     return Scaffold(
-        appBar: AppBar(title: const Text('Input text to be spoken')),
         body: Column(children: [
           // If the Future is complete, display the preview.
+          getHeader(),
           TextField(
             decoration: InputDecoration(
               border: OutlineInputBorder(),
@@ -293,56 +293,73 @@ class TextInputScreenState extends State<TextInputScreen> {
     );
   }
 
+  Widget getHeader() {
+    return Row(
+      children: const <Widget>[
+        Spacer(flex: 1),
+        Expanded(
+          child: Text('Text to speech converter',
+              textAlign: TextAlign.left, style: TextStyle(fontSize: 52)),
+          flex: 6,
+        ),
+        Spacer(flex: 7),
+        Expanded(
+          child: Text('Powered by Dhali',
+              textAlign: TextAlign.right, style: TextStyle(fontSize: 18)),
+        ),
+        Spacer(flex: 2),
+      ],
+    );
+  }
+
   Widget getWalletScaffold() {
     return Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        appBar: AppBar(title: const Text('Input text to be spoken')),
         body: Column(children: [
-          // If the Future is complete, display the preview.
-          TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Lorem ipsum dolor sit amet',
-            ),
-            controller: _submissionTextController,
-          ),
-          _wallet == null
-              ? SelectableText(
-                  'Please activate your wallet and enter an authorised amount',
-                  style: const TextStyle(fontSize: 25))
-              : ValueListenableBuilder<String?>(
-                  valueListenable: _wallet!.balance,
-                  builder: (BuildContext context, String? balance, Widget? _) {
-                    if (balance == null) {
-                      return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+          Spacer(flex: 1),
+          Expanded(child: getHeader(), flex: 3),
+          Spacer(flex: 10),
+          Expanded(
+              child: _wallet == null
+                  ? SelectableText('Please activate your wallet!',
+                      style: const TextStyle(fontSize: 25))
+                  : ValueListenableBuilder<String?>(
+                      valueListenable: _wallet!.balance,
+                      builder:
+                          (BuildContext context, String? balance, Widget? _) {
+                        if (balance == null) {
+                          return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("Loading wallet: ",
+                                    style: TextStyle(fontSize: 25)),
+                                CircularProgressIndicator()
+                              ]);
+                        }
+                        return Column(
                           children: [
-                            Text("Loading wallet: ",
-                                style: TextStyle(fontSize: 25)),
-                            CircularProgressIndicator()
-                          ]);
-                    }
-                    return Column(
-                      children: [
-                        SelectableText('Classic address: ${_wallet!.address}',
-                            style: const TextStyle(fontSize: 25)),
-                        SelectableText('Balance: $balance XRP',
-                            style: const TextStyle(fontSize: 25)),
-                        TextField(
-                          controller: _authAmountController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              helperText:
-                                  "This is the maximum number of drops Dhali can charge your wallet",
-                              labelText: "Enter number of drops to authorize"),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
+                            SelectableText(
+                                'Classic address: ${_wallet!.address}',
+                                style: const TextStyle(fontSize: 25)),
+                            SelectableText('Balance: $balance XRP',
+                                style: const TextStyle(fontSize: 25)),
+                            TextField(
+                              controller: _authAmountController,
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  helperText:
+                                      "This is the maximum number of drops Dhali can charge your wallet",
+                                  labelText:
+                                      "Enter number of drops to authorize"),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                            )
                           ],
-                        )
-                      ],
-                    );
-                  })
+                        );
+                      }),
+              flex: 10),
         ]),
         floatingActionButton: getWalletFloatingActionButton("Get wallet"));
   }
