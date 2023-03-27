@@ -3,6 +3,7 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:web_audio';
 import 'package:badges/badges.dart' as badges;
+import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'dart:convert';
 import 'dart:io';
@@ -122,9 +123,14 @@ class TextInputScreenState extends State<TextInputScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Cost", style: const TextStyle(fontSize: 25)),
-                Text("GitHub repo", style: const TextStyle(fontSize: 25)),
-                Text("Cost", style: const TextStyle(fontSize: 25))
+                Linkify(
+                    onOpen: (link) => html.window.open(link.url, 'new tab'),
+                    text:
+                        "GitHub repo https://github.com/Dhali-org/xrpl-text-to-speech/tree/develop",
+                    style: const TextStyle(fontSize: 25)),
+                Text(
+                    "Note: costs are calculated based on input size.  This app uses the XRPL testnet.",
+                    style: const TextStyle(fontSize: 25))
               ],
             ),
             Spacer(flex: 8),
