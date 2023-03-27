@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:web_audio';
+import 'package:badges/badges.dart' as badges;
 
 import 'dart:convert';
 import 'dart:io';
@@ -295,19 +296,42 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getHeader() {
     return Row(
-      children: const <Widget>[
-        Spacer(flex: 1),
-        Expanded(
-          child: Text('Text to speech converter',
-              textAlign: TextAlign.left, style: TextStyle(fontSize: 52)),
-          flex: 6,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        const Spacer(flex: 1),
+        const SizedBox(
+          width: 10,
         ),
-        Spacer(flex: 7),
-        Expanded(
-          child: Text('Powered by Dhali',
+        const Text(
+          'Text to speech converter',
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 52),
+        ),
+        const Spacer(flex: 3),
+        badges.Badge(
+          position: badges.BadgePosition.topEnd(top: -2, end: -30),
+          showBadge: true,
+          ignorePointer: false,
+          onTap: () {},
+          badgeContent: const Icon(Icons.check, color: Colors.white, size: 10),
+          badgeAnimation: const badges.BadgeAnimation.rotation(
+            animationDuration: Duration(seconds: 1),
+            colorChangeAnimationDuration: Duration(seconds: 1),
+            loopAnimation: false,
+            curve: Curves.fastOutSlowIn,
+            colorChangeAnimationCurve: Curves.easeInCubic,
+          ),
+          badgeStyle: badges.BadgeStyle(
+            shape: badges.BadgeShape.square,
+            badgeColor: Colors.green,
+            padding: const EdgeInsets.all(5),
+            borderRadius: BorderRadius.circular(4),
+            elevation: 0,
+          ),
+          child: const Text('Powered by Dhali',
               textAlign: TextAlign.right, style: TextStyle(fontSize: 18)),
         ),
-        Spacer(flex: 2),
+        const Spacer(flex: 1),
       ],
     );
   }

@@ -30,6 +30,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   xrpl: ^0.0.2
+  badges: ^3.0.3
   flutter:
     sdk: flutter
   camera:
