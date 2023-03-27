@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:typed_data';
+import 'dart:web_audio';
 
 import 'dart:convert';
 import 'dart:io';
@@ -9,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/src/media_type.dart';
 import 'package:logger/logger.dart';
-import 'package:assets_audio_player/assets_audio_player.dart';
 
 import 'package:xrpl/xrpl.dart';
 
@@ -186,13 +187,36 @@ class TextInputScreenState extends State<TextInputScreen> {
                       logger.d("Status: ${finalResponse.statusCode}");
                       var response = json
                           .decode(await finalResponse.stream.bytesToString());
+
                       if (finalResponse.statusCode == 200) {
                         updateSnackBar(snackBarType: SnackBarTypes.success);
-                        var blob = html.Blob(
-                            response["results"], 'audio/mp3', 'native');
-                        var url = html.Url.createObjectUrlFromBlob(blob);
-                        final assetsAudioPlayer = AssetsAudioPlayer();
-                        await assetsAudioPlayer.open(Audio.network(url));
+                        final audioContext = AudioContext();
+
+                        try {
+                          List<double> audioSamples =
+                              response["results"].cast<double>();
+
+                          final audioContext = AudioContext();
+                          final audioBuffer = audioContext.createBuffer(
+                              1, audioSamples.length, 16000);
+
+                          // Fill the buffer with the audio samples
+                          Float32List buffer =
+                              Float32List.fromList(audioSamples);
+                          audioBuffer.copyToChannel(buffer, 0);
+
+                          // Create a buffer source and connect it to the destination
+                          final audioBufferSource =
+                              audioContext.createBufferSource();
+                          audioBufferSource.buffer = audioBuffer;
+                          audioBufferSource
+                              .connectNode(audioContext.destination!);
+
+                          audioBufferSource.start(0);
+                        } catch (e, stacktrace) {
+                          print('Error playing audio: $e');
+                          print('Stack: ${stacktrace}');
+                        }
                       } else {
                         updateSnackBar(
                             message: response.toString(),
