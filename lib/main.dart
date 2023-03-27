@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:js_util';
 import 'package:consumer_application/wallet.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/src/media_type.dart';
 import 'package:logger/logger.dart';
@@ -40,6 +41,7 @@ class TextInputScreenState extends State<TextInputScreen> {
   ValueNotifier<String?> balance = ValueNotifier(null);
   String? mnemonic;
   final TextEditingController _mnemonicController = TextEditingController();
+  final TextEditingController _authAmountController = TextEditingController();
   final TextEditingController _submissionTextController =
       TextEditingController();
   void initState() {
@@ -65,7 +67,8 @@ class TextInputScreenState extends State<TextInputScreen> {
             controller: _submissionTextController,
           ),
           _wallet == null
-              ? SelectableText('Please activate your wallet',
+              ? SelectableText(
+                  'Please activate your wallet and enter an authorised amount',
                   style: const TextStyle(fontSize: 25))
               : ValueListenableBuilder<String?>(
                   valueListenable: _wallet!.balance,
@@ -84,7 +87,18 @@ class TextInputScreenState extends State<TextInputScreen> {
                         SelectableText('Classic address: ${_wallet!.address}',
                             style: const TextStyle(fontSize: 25)),
                         SelectableText('Balance: $balance XRP',
-                            style: const TextStyle(fontSize: 25))
+                            style: const TextStyle(fontSize: 25)),
+                        TextField(
+                          controller: _authAmountController,
+                          decoration: const InputDecoration(
+                              helperText:
+                                  "This is the maximum number of drops Dhali can charge your wallet",
+                              labelText: "Enter number of drops to authorize"),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                        )
                       ],
                     );
                   })
@@ -99,12 +113,13 @@ class TextInputScreenState extends State<TextInputScreen> {
                   heroTag: "run",
                   tooltip: "Run inference",
                   onPressed: () async {
-                    if (_wallet == null) {
+                    if (_wallet == null || _authAmountController.text == "") {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Inactive wallet'),
-                          content: const Text('Please activate your wallet'),
+                          title: const Text('Invalid wallet'),
+                          content: const Text(
+                              'Please activate your wallet and set an authorised amount'),
                           actions: [
                             ElevatedButton(
                                 onPressed: () {
@@ -132,8 +147,8 @@ class TextInputScreenState extends State<TextInputScreen> {
                           "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
                       String amount =
                           "10000000"; // The total amount escrowed in the channel
-                      String authAmount =
-                          "3000000"; // The amount to authorise for the claim
+                      String authAmount = _authAmountController
+                          .text; // The amount to authorise for the claim
                       var openChannels = await _wallet!
                           .getOpenPaymentChannels(destination_address: dest);
                       if (openChannels.isEmpty) {
