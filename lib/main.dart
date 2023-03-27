@@ -45,7 +45,6 @@ class TextInputScreenState extends State<TextInputScreen> {
   ValueNotifier<String?> balance = ValueNotifier(null);
   String? mnemonic;
   final TextEditingController _mnemonicController = TextEditingController();
-  final TextEditingController _authAmountController = TextEditingController();
   final TextEditingController _submissionTextController =
       TextEditingController();
   void initState() {
@@ -75,8 +74,7 @@ class TextInputScreenState extends State<TextInputScreen> {
             controller: _submissionTextController,
           ),
           _wallet == null
-              ? SelectableText(
-                  'Please activate your wallet and enter an authorised amount',
+              ? SelectableText('Please activate your wallet!',
                   style: const TextStyle(fontSize: 25))
               : ValueListenableBuilder<String?>(
                   valueListenable: _wallet!.balance,
@@ -96,18 +94,6 @@ class TextInputScreenState extends State<TextInputScreen> {
                             style: const TextStyle(fontSize: 25)),
                         SelectableText('Balance: $balance XRP',
                             style: const TextStyle(fontSize: 25)),
-                        TextField(
-                          controller: _authAmountController,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              helperText:
-                                  "This is the maximum number of drops Dhali can charge your wallet",
-                              labelText: "Enter number of drops to authorize"),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                        )
                       ],
                     );
                   })
@@ -122,13 +108,12 @@ class TextInputScreenState extends State<TextInputScreen> {
                   heroTag: "run",
                   tooltip: "Run inference",
                   onPressed: () async {
-                    if (_wallet == null || _authAmountController.text == "") {
+                    if (_wallet == null) {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('Invalid wallet'),
-                          content: const Text(
-                              'Please activate your wallet and set an authorised amount'),
+                          content: const Text('Please activate your wallet!'),
                           actions: [
                             ElevatedButton(
                                 onPressed: () {
@@ -151,8 +136,8 @@ class TextInputScreenState extends State<TextInputScreen> {
                           "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
                       String amount =
                           "10000000"; // The total amount escrowed in the channel
-                      String authAmount = _authAmountController
-                          .text; // The amount to authorise for the claim
+                      String authAmount = _wallet!.balance
+                          .value!; // The amount to authorise for the claim
                       var openChannels = await _wallet!
                           .getOpenPaymentChannels(destination_address: dest);
                       if (openChannels.isEmpty) {
@@ -367,19 +352,6 @@ class TextInputScreenState extends State<TextInputScreen> {
                                 style: const TextStyle(fontSize: 25)),
                             SelectableText('Balance: $balance XRP',
                                 style: const TextStyle(fontSize: 25)),
-                            TextField(
-                              controller: _authAmountController,
-                              decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  helperText:
-                                      "This is the maximum number of drops Dhali can charge your wallet",
-                                  labelText:
-                                      "Enter number of drops to authorize"),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
-                            )
                           ],
                         );
                       }),
