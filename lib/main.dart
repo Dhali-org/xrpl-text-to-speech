@@ -139,7 +139,7 @@ class TextInputScreenState extends State<TextInputScreen> {
       tooltip: "Run inference",
       onPressed: () async {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        const int wordLimit = 25;
+        const int wordLimit = 15;
         if (_wallet == null) {
           showDialog(
             context: context,
