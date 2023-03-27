@@ -91,6 +91,7 @@ class TextInputScreenState extends State<TextInputScreen> {
                         TextField(
                           controller: _authAmountController,
                           decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
                               helperText:
                                   "This is the maximum number of drops Dhali can charge your wallet",
                               labelText: "Enter number of drops to authorize"),
