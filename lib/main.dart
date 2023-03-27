@@ -23,10 +23,6 @@ Future<void> main() async {
     MaterialApp(
       theme: ThemeData.dark(),
       home: TextInputScreen(),
-      //home: TakePictureScreen(
-      //  // Pass the appropriate camera to the TakePictureScreen widget.
-      //  camera: firstCamera,
-      //),
     ),
   );
 }
@@ -66,11 +62,9 @@ class TextInputScreenState extends State<TextInputScreen> {
   Widget getInferenceScaffold() {
     return Scaffold(
         body: Column(children: [
-          // If the Future is complete, display the preview.
           Spacer(flex: 1),
           Expanded(child: getHeader(), flex: 3),
-          Spacer(flex: 10),
-
+          Spacer(flex: 5),
           _wallet == null
               ? SelectableText('Please activate your wallet!',
                   style: const TextStyle(fontSize: 25))
@@ -87,7 +81,7 @@ class TextInputScreenState extends State<TextInputScreen> {
                           ]);
                     }
                     return Row(children: [
-                      Spacer(flex: 2),
+                      Spacer(flex: 5),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -98,12 +92,12 @@ class TextInputScreenState extends State<TextInputScreen> {
                               style: const TextStyle(fontSize: 25)),
                         ],
                       ),
-                      Spacer(flex: 10),
+                      Spacer(flex: 20),
                     ]);
                   }),
-          Spacer(flex: 3),
+          Spacer(flex: 1),
           Container(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            padding: EdgeInsets.fromLTRB(220, 0, 220, 0),
             child: TextField(
               maxLines: 10,
               minLines: 10,
@@ -120,7 +114,7 @@ class TextInputScreenState extends State<TextInputScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Spacer(flex: 1),
+            Spacer(flex: 3),
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,10 +129,9 @@ class TextInputScreenState extends State<TextInputScreen> {
                     style: const TextStyle(fontSize: 25))
               ],
             ),
-            Spacer(flex: 8),
-            getInferenceFloatingActionButton(), Spacer(flex: 1)
-
-// Add more floating buttons if you want
+            Spacer(flex: 5),
+            getInferenceFloatingActionButton(),
+            Spacer(flex: 3)
           ],
         ));
   }
@@ -233,7 +226,6 @@ class TextInputScreenState extends State<TextInputScreen> {
 
           if (finalResponse.statusCode == 200) {
             updateSnackBar(snackBarType: SnackBarTypes.success);
-            final audioContext = AudioContext();
 
             try {
               List<double> audioSamples = response["results"].cast<double>();
