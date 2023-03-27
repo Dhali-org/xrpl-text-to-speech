@@ -66,13 +66,6 @@ class TextInputScreenState extends State<TextInputScreen> {
         body: Column(children: [
           // If the Future is complete, display the preview.
           getHeader(),
-          TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Lorem ipsum dolor sit amet',
-            ),
-            controller: _submissionTextController,
-          ),
           _wallet == null
               ? SelectableText('Please activate your wallet!',
                   style: const TextStyle(fontSize: 25))
@@ -96,7 +89,14 @@ class TextInputScreenState extends State<TextInputScreen> {
                             style: const TextStyle(fontSize: 25)),
                       ],
                     );
-                  })
+                  }),
+          TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Lorem ipsum dolor sit amet',
+            ),
+            controller: _submissionTextController,
+          ),
         ]),
         floatingActionButton: Stack(
           fit: StackFit.expand,
