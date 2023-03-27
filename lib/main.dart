@@ -28,6 +28,8 @@ Future<void> main() async {
   );
 }
 
+enum SnackBarTypes { error, success, inProgress }
+
 class TextInputScreen extends StatefulWidget {
   @override
   TextInputScreenState createState() => TextInputScreenState();
@@ -133,13 +135,8 @@ class TextInputScreenState extends State<TextInputScreen> {
                       return;
                     }
 
-                    const snackBar = SnackBar(
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 5),
-                      content: Text('Inference in progress. Please wait...'),
-                    );
+                    updateSnackBar(snackBarType: SnackBarTypes.inProgress);
 
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     // Take the Picture in a try / catch block. If anything goes wrong,
                     // catch the error.
                     try {
@@ -189,29 +186,26 @@ class TextInputScreenState extends State<TextInputScreen> {
                       logger.d("Status: ${finalResponse.statusCode}");
                       var response = json
                           .decode(await finalResponse.stream.bytesToString());
-
-                      var blob =
-                          html.Blob(response["results"], 'audio/mp3', 'native');
-                      var url = html.Url.createObjectUrlFromBlob(blob);
-                      final assetsAudioPlayer = AssetsAudioPlayer();
-                      await assetsAudioPlayer.open(Audio.network(url));
+                      if (finalResponse.statusCode == 200) {
+                        updateSnackBar(snackBarType: SnackBarTypes.success);
+                        var blob = html.Blob(
+                            response["results"], 'audio/mp3', 'native');
+                        var url = html.Url.createObjectUrlFromBlob(blob);
+                        final assetsAudioPlayer = AssetsAudioPlayer();
+                        await assetsAudioPlayer.open(Audio.network(url));
+                      } else {
+                        updateSnackBar(
+                            message: response.toString(),
+                            snackBarType: SnackBarTypes.error);
+                      }
                     } catch (e) {
-                      // If an error occurs, log the error to the console.
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Ooops!'),
-                          content: const Text(
-                              'An error occured. This may be due to your asset being cold started. Try again.'),
-                          actions: [
-                            ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('OK'))
-                          ],
-                        ),
-                      );
+                      updateSnackBar(snackBarType: SnackBarTypes.error);
+                    } finally {
+                      Future.delayed(const Duration(milliseconds: 1000), () {
+                        setState(() {
+                          updateSnackBar();
+                        });
+                      });
                     }
                   },
                   child: const Icon(Icons.speaker_notes),
@@ -266,5 +260,35 @@ class TextInputScreenState extends State<TextInputScreen> {
 // Add more floating buttons if you want
           ],
         ));
+  }
+
+  void updateSnackBar({String? message, SnackBarTypes? snackBarType}) {
+    SnackBar snackbar;
+    if (snackBarType == SnackBarTypes.error) {
+      snackbar = SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(message == null
+            ? 'An unknown error occured. Please wait 30 seconds and try again.'
+            : message),
+        duration: const Duration(seconds: 10),
+      );
+    } else if (snackBarType == SnackBarTypes.inProgress) {
+      snackbar = const SnackBar(
+        backgroundColor: Colors.blue,
+        content: Text('Inference in progress. Please wait...'),
+        duration: Duration(days: 365),
+      );
+    } else if (snackBarType == SnackBarTypes.success) {
+      snackbar = const SnackBar(
+        backgroundColor: Colors.green,
+        content: Text('Success'),
+        duration: Duration(seconds: 3),
+      );
+    } else {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(snackbar);
   }
 }
