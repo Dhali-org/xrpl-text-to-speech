@@ -6,10 +6,7 @@ import 'package:badges/badges.dart' as badges;
 import 'package:flutter_linkify/flutter_linkify.dart';
 
 import 'dart:convert';
-import 'dart:io';
-import 'dart:js_util';
 import 'package:consumer_application/wallet.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/src/media_type.dart';
 import 'package:logger/logger.dart';
