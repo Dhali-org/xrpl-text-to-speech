@@ -58,6 +58,10 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return _wallet == null ? getWalletScaffold() : getInferenceScaffold();
+  }
+
+  Widget getInferenceScaffold() {
     return Scaffold(
         appBar: AppBar(title: const Text('Input text to be spoken')),
         body: Column(children: [
@@ -237,53 +241,110 @@ class TextInputScreenState extends State<TextInputScreen> {
             Positioned(
               bottom: 20,
               right: 30,
-              child: FloatingActionButton(
-                heroTag: "topup",
-                tooltip: "Activate or top-up my wallet",
-                onPressed: () async {
-                  if (_wallet == null) {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            actions: [
-                              ElevatedButton(
-                                  onPressed: () {
-                                    mnemonic = _mnemonicController.text;
-                                    if (mnemonic != null) {
-                                      setState(() {
-                                        _wallet = XRPLWallet(mnemonic!,
-                                            testMode: true);
-                                      });
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('OK'))
-                            ],
-                            title: const Text(
-                                'Generate wallet using BIP-39 compatible words'),
-                            content: TextField(
-                              onChanged: (value) {},
-                              controller: _mnemonicController,
-                            ),
-                          );
-                        });
-                  }
-                  if (mnemonic != null) {
-                    setState(() {
-                      _wallet = XRPLWallet(mnemonic!, testMode: true);
-                    });
-                  }
-                },
-                child: const Icon(
-                  Icons.wallet_sharp,
-                  size: 40,
-                ),
-              ),
+              child: getWalletFloatingActionButton("Top-up balance"),
             ),
 // Add more floating buttons if you want
           ],
         ));
+  }
+
+  Widget getWalletFloatingActionButton(String text) {
+    return FloatingActionButton.extended(
+      heroTag: "topup",
+      tooltip: "Activate or top-up my wallet",
+      onPressed: () async {
+        if (_wallet == null) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  actions: [
+                    ElevatedButton(
+                        onPressed: () {
+                          mnemonic = _mnemonicController.text;
+                          if (mnemonic != null) {
+                            setState(() {
+                              _wallet = XRPLWallet(mnemonic!, testMode: true);
+                            });
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text('OK'))
+                  ],
+                  title: const Text(
+                      'Generate wallet using BIP-39 compatible words'),
+                  content: TextField(
+                    onChanged: (value) {},
+                    controller: _mnemonicController,
+                  ),
+                );
+              });
+        }
+        if (mnemonic != null) {
+          setState(() {
+            _wallet = XRPLWallet(mnemonic!, testMode: true);
+          });
+        }
+      },
+      label: Text(
+        text,
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget getWalletScaffold() {
+    return Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        appBar: AppBar(title: const Text('Input text to be spoken')),
+        body: Column(children: [
+          // If the Future is complete, display the preview.
+          TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Lorem ipsum dolor sit amet',
+            ),
+            controller: _submissionTextController,
+          ),
+          _wallet == null
+              ? SelectableText(
+                  'Please activate your wallet and enter an authorised amount',
+                  style: const TextStyle(fontSize: 25))
+              : ValueListenableBuilder<String?>(
+                  valueListenable: _wallet!.balance,
+                  builder: (BuildContext context, String? balance, Widget? _) {
+                    if (balance == null) {
+                      return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Loading wallet: ",
+                                style: TextStyle(fontSize: 25)),
+                            CircularProgressIndicator()
+                          ]);
+                    }
+                    return Column(
+                      children: [
+                        SelectableText('Classic address: ${_wallet!.address}',
+                            style: const TextStyle(fontSize: 25)),
+                        SelectableText('Balance: $balance XRP',
+                            style: const TextStyle(fontSize: 25)),
+                        TextField(
+                          controller: _authAmountController,
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              helperText:
+                                  "This is the maximum number of drops Dhali can charge your wallet",
+                              labelText: "Enter number of drops to authorize"),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                        )
+                      ],
+                    );
+                  })
+        ]),
+        floatingActionButton: getWalletFloatingActionButton("Get wallet"));
   }
 
   void updateSnackBar({String? message, SnackBarTypes? snackBarType}) {
