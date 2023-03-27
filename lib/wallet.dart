@@ -40,7 +40,7 @@ class XRPLWallet {
 
   ValueNotifier<String?> balance = ValueNotifier(null);
 
-  XRPLWallet(String seed, {bool testMode = false, fundingAmount = "10"}) {
+  XRPLWallet(String seed, {bool testMode = false, fundingAmount = "40"}) {
     _netUrl = testMode ? testNetUrl : mainnetUrl;
 
     var walletFromMneomicOptions = WalletFromMnemonicOptions(

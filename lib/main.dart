@@ -39,6 +39,7 @@ class TextInputScreen extends StatefulWidget {
 }
 
 class TextInputScreenState extends State<TextInputScreen> {
+  String dhaliDebit = "0";
   XRPLWallet? _wallet;
   String _endPoint =
       "https://kernml-run-3mmgxhct.uc.gateway.dev/dhali-text-2-speech/run";
@@ -92,7 +93,8 @@ class TextInputScreenState extends State<TextInputScreen> {
                         children: [
                           SelectableText('Classic address: ${_wallet!.address}',
                               style: const TextStyle(fontSize: 25)),
-                          SelectableText('Balance: $balance XRP',
+                          SelectableText(
+                              'Balance: ${double.parse(balance) - double.parse(dhaliDebit) / 1000000} XRP',
                               style: const TextStyle(fontSize: 25)),
                         ],
                       ),
@@ -134,7 +136,6 @@ class TextInputScreenState extends State<TextInputScreen> {
               ],
             ),
             Spacer(flex: 8),
-            getWalletFloatingActionButton("Top-up balance"), Spacer(flex: 1),
             getInferenceFloatingActionButton(), Spacer(flex: 1)
 
 // Add more floating buttons if you want
@@ -147,6 +148,8 @@ class TextInputScreenState extends State<TextInputScreen> {
       heroTag: "run",
       tooltip: "Run inference",
       onPressed: () async {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        const int wordLimit = 25;
         if (_wallet == null) {
           showDialog(
             context: context,
@@ -163,19 +166,27 @@ class TextInputScreenState extends State<TextInputScreen> {
             ),
           );
           return;
+        } else if (_submissionTextController.text == "") {
+          updateSnackBar(
+              message: "You must provide an input",
+              snackBarType: SnackBarTypes.error);
+          return;
+        } else if (_submissionTextController.text.split(" ").length >
+            wordLimit) {
+          updateSnackBar(
+              message:
+                  "Inputs larger than $wordLimit words will likely fail, but you may still be charged",
+              snackBarType: SnackBarTypes.error);
+          return;
         }
 
         updateSnackBar(snackBarType: SnackBarTypes.inProgress);
 
-        // Take the Picture in a try / catch block. If anything goes wrong,
-        // catch the error.
         try {
-          if (!mounted) return;
           String dest = "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
-          String amount =
-              "10000000"; // The total amount escrowed in the channel
-          String authAmount =
-              _wallet!.balance.value!; // The amount to authorise for the claim
+          String amount = (double.parse(_wallet!.balance.value!) * 1000000 ~/ 2)
+              .toString(); // The total amount escrowed in the channel
+          String authAmount = amount; // The amount to authorise for the claim
           var openChannels =
               await _wallet!.getOpenPaymentChannels(destination_address: dest);
           if (openChannels.isEmpty) {
@@ -209,6 +220,13 @@ class TextInputScreenState extends State<TextInputScreen> {
               filename: "input"));
 
           var finalResponse = await request.send();
+
+          if (finalResponse.headers
+                  .containsKey("dhali-total-requests-charge") &&
+              finalResponse.headers["dhali-total-requests-charge"] != null) {
+            dhaliDebit = finalResponse.headers["dhali-total-requests-charge"]!;
+          }
+
           logger.d("Status: ${finalResponse.statusCode}");
           var response =
               json.decode(await finalResponse.stream.bytesToString());
@@ -263,7 +281,7 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getWalletFloatingActionButton(String text) {
     return FloatingActionButton.extended(
-      heroTag: "topup",
+      heroTag: "getWallet",
       tooltip: "Activate or top-up my wallet",
       onPressed: () async {
         if (_wallet == null) {
