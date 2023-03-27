@@ -40,7 +40,7 @@ class XRPLWallet {
 
   ValueNotifier<String?> balance = ValueNotifier(null);
 
-  XRPLWallet(String seed, {bool testMode = false}) {
+  XRPLWallet(String seed, {bool testMode = false, fundingAmount = "10"}) {
     _netUrl = testMode ? testNetUrl : mainnetUrl;
 
     var walletFromMneomicOptions = WalletFromMnemonicOptions(
@@ -59,7 +59,8 @@ class XRPLWallet {
     try {
       promiseToFuture(client.connect()).then((erg) {
         // TODO: Remove this in the future
-        promiseToFuture(client.fundWallet(_wallet)).then((e) {
+        final options = FundWalletOptions(amount: fundingAmount);
+        promiseToFuture(client.fundWallet(_wallet, options)).then((e) {
           String address = _wallet!.address;
           promiseToFuture(client.getXrpBalance(address)).then((balanceString) {
             balance.value = balanceString.toString();
