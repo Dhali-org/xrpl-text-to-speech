@@ -62,7 +62,9 @@ class XRPLWallet {
         final options = FundWalletOptions(amount: fundingAmount);
         promiseToFuture(client.fundWallet(_wallet, options)).then((e) {
           String address = _wallet!.address;
+          print("BERE");
           promiseToFuture(client.getXrpBalance(address)).then((balanceString) {
+            print("THERE");
             balance.value = balanceString.toString();
           }).whenComplete(() {
             client.disconnect();
