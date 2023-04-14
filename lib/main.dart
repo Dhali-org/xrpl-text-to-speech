@@ -181,21 +181,21 @@ class TextInputScreenState extends State<TextInputScreen> {
               message: "You must provide an input",
               snackBarType: SnackBarTypes.error);
           return;
-        } else if (_submissionTextController.text.split(" ").length >
-            wordLimit) {
-          updateSnackBar(
-              message:
-                  "Inputs larger than $wordLimit words will likely fail, but you may still be charged",
-              snackBarType: SnackBarTypes.error);
-          return;
         }
 
         updateSnackBar(snackBarType: SnackBarTypes.inProgress);
-
         try {
-          String dest = "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
-          var openChannels =
-              await _wallet!.getOpenPaymentChannels(destination_address: dest);
+          List<String> sentences = _submissionTextController.text.split(".");
+          List<double> audioSamples = [];
+          bool successful = true;
+          for (String sentence in sentences) {
+            if (sentence == "") {
+              continue;
+            }
+            String dest =
+                "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
+            var openChannels = await _wallet!
+                .getOpenPaymentChannels(destination_address: dest);
           String amount;
           String authAmount; // The amount to authorise for the claim
           if (openChannels.isNotEmpty) {
@@ -224,10 +224,8 @@ class TextInputScreenState extends State<TextInputScreen> {
           request.headers.addAll(header);
 
           var logger = Logger();
-          logger.d("Preparing file in body");
           var textBytes = _submissionTextController.text.codeUnits;
-          var input =
-              '{"accent": $selectedAccentInt, "text": "${_submissionTextController.text}"}';
+            var input = '{"accent": $selectedAccentInt, "text": "$sentence."}';
           request.files.add(http.MultipartFile(
               contentType: MediaType('multipart', 'form-data'),
               "input",
@@ -240,19 +238,26 @@ class TextInputScreenState extends State<TextInputScreen> {
           if (finalResponse.headers
                   .containsKey("dhali-total-requests-charge") &&
               finalResponse.headers["dhali-total-requests-charge"] != null) {
-            dhaliDebit = finalResponse.headers["dhali-total-requests-charge"]!;
+              dhaliDebit =
+                  finalResponse.headers["dhali-total-requests-charge"]!;
           }
 
           logger.d("Status: ${finalResponse.statusCode}");
           var response =
               json.decode(await finalResponse.stream.bytesToString());
-
           if (finalResponse.statusCode == 200) {
+              audioSamples.addAll(response["results"].cast<double>());
+            } else {
+              updateSnackBar(
+                  message: response.toString(),
+                  snackBarType: SnackBarTypes.error);
+              throw Exception("Your text could not be converted successfully");
+            }
+          }
+
             updateSnackBar(snackBarType: SnackBarTypes.success);
 
             try {
-              List<double> audioSamples = response["results"].cast<double>();
-
               final audioContext = AudioContext();
               final audioBuffer =
                   audioContext.createBuffer(1, audioSamples.length, 16000);
@@ -270,11 +275,6 @@ class TextInputScreenState extends State<TextInputScreen> {
             } catch (e, stacktrace) {
               print('Error playing audio: $e');
               print('Stack: ${stacktrace}');
-            }
-          } else {
-            updateSnackBar(
-                message: response.toString(),
-                snackBarType: SnackBarTypes.error);
           }
         } catch (e) {
           updateSnackBar(snackBarType: SnackBarTypes.error);
