@@ -30,9 +30,15 @@ Future<void> main() async {
 enum SnackBarTypes { error, success, inProgress }
 
 const Map<String, int> accents = {
-  "American woman": 7391,
-  "American man": 2100,
-  "Scottish man": 100
+  "American woman 1": 7000,
+  "American woman 2": 7391,
+  "American woman 3": 6801,
+  "American woman 4": 7900,
+  "American man 1": 2100,
+  "American man 2": 6100,
+  "American man 3": 1300,
+  "American man 4": 5000,
+  "American man 5": 4000
 };
 
 class TextInputScreen extends StatefulWidget {
@@ -96,9 +102,9 @@ class TextInputScreenState extends State<TextInputScreen> {
                                   style: const TextStyle(fontSize: 25)),
                         ],
                       ),
-                      Spacer(flex: 10),
+                      Spacer(flex: 9),
                       Expanded(
-                          flex: 5,
+                          flex: 6,
                           child: DropdownAccentButton(
                             setValue: (value) {
                               setState(() {
@@ -196,56 +202,56 @@ class TextInputScreenState extends State<TextInputScreen> {
                 "rstbSTpPcyxMsiXwkBxS9tFTrg2JsDNxWk"; // Dhali's address
             var openChannels = await _wallet!
                 .getOpenPaymentChannels(destination_address: dest);
-          String amount;
-          String authAmount; // The amount to authorise for the claim
-          if (openChannels.isNotEmpty) {
-            amount = openChannels.first.amount.toString();
-          } else {
-            amount = (double.parse(_wallet!.balance.value!) * 1000000 ~/ 2)
-                .toString(); // The total amount escrowed in the channel
-            openChannels = [await _wallet!.openPaymentChannel(dest, amount)];
-          }
-          authAmount = amount;
-          Map<String, String> paymentClaim = {
-            "account": _wallet!.address,
-            "destination_account": dest,
-            "authorized_to_claim": authAmount,
-            "signature":
-                _wallet!.sendDrops(authAmount, openChannels[0].channelId),
-            "channel_id": openChannels[0].channelId
-          };
-          Map<String, String> header = {
-            "Payment-Claim": const JsonEncoder().convert(paymentClaim)
-          };
-          String entryPointUrlRoot = _endPoint;
+            String amount;
+            String authAmount; // The amount to authorise for the claim
+            if (openChannels.isNotEmpty) {
+              amount = openChannels.first.amount.toString();
+            } else {
+              amount = (double.parse(_wallet!.balance.value!) * 1000000 ~/ 2)
+                  .toString(); // The total amount escrowed in the channel
+              openChannels = [await _wallet!.openPaymentChannel(dest, amount)];
+            }
+            authAmount = amount;
+            Map<String, String> paymentClaim = {
+              "account": _wallet!.address,
+              "destination_account": dest,
+              "authorized_to_claim": authAmount,
+              "signature":
+                  _wallet!.sendDrops(authAmount, openChannels[0].channelId),
+              "channel_id": openChannels[0].channelId
+            };
+            Map<String, String> header = {
+              "Payment-Claim": const JsonEncoder().convert(paymentClaim)
+            };
+            String entryPointUrlRoot = _endPoint;
 
-          var request =
-              http.MultipartRequest("PUT", Uri.parse(entryPointUrlRoot));
-          request.headers.addAll(header);
+            var request =
+                http.MultipartRequest("PUT", Uri.parse(entryPointUrlRoot));
+            request.headers.addAll(header);
 
-          var logger = Logger();
-          var textBytes = _submissionTextController.text.codeUnits;
+            var logger = Logger();
+            var textBytes = _submissionTextController.text.codeUnits;
             var input = '{"accent": $selectedAccentInt, "text": "$sentence."}';
-          request.files.add(http.MultipartFile(
-              contentType: MediaType('multipart', 'form-data'),
-              "input",
-              Stream.value(input.codeUnits),
-              textBytes.length,
-              filename: "input"));
+            request.files.add(http.MultipartFile(
+                contentType: MediaType('multipart', 'form-data'),
+                "input",
+                Stream.value(input.codeUnits),
+                textBytes.length,
+                filename: "input"));
 
-          var finalResponse = await request.send();
+            var finalResponse = await request.send();
 
-          if (finalResponse.headers
-                  .containsKey("dhali-total-requests-charge") &&
-              finalResponse.headers["dhali-total-requests-charge"] != null) {
+            if (finalResponse.headers
+                    .containsKey("dhali-total-requests-charge") &&
+                finalResponse.headers["dhali-total-requests-charge"] != null) {
               dhaliDebit =
                   finalResponse.headers["dhali-total-requests-charge"]!;
-          }
+            }
 
-          logger.d("Status: ${finalResponse.statusCode}");
-          var response =
-              json.decode(await finalResponse.stream.bytesToString());
-          if (finalResponse.statusCode == 200) {
+            logger.d("Status: ${finalResponse.statusCode}");
+            var response =
+                json.decode(await finalResponse.stream.bytesToString());
+            if (finalResponse.statusCode == 200) {
               audioSamples.addAll(response["results"].cast<double>());
             } else {
               updateSnackBar(
@@ -255,26 +261,26 @@ class TextInputScreenState extends State<TextInputScreen> {
             }
           }
 
-            updateSnackBar(snackBarType: SnackBarTypes.success);
+          updateSnackBar(snackBarType: SnackBarTypes.success);
 
-            try {
-              final audioContext = AudioContext();
-              final audioBuffer =
-                  audioContext.createBuffer(1, audioSamples.length, 16000);
+          try {
+            final audioContext = AudioContext();
+            final audioBuffer =
+                audioContext.createBuffer(1, audioSamples.length, 16000);
 
-              // Fill the buffer with the audio samples
-              Float32List buffer = Float32List.fromList(audioSamples);
-              audioBuffer.copyToChannel(buffer, 0);
+            // Fill the buffer with the audio samples
+            Float32List buffer = Float32List.fromList(audioSamples);
+            audioBuffer.copyToChannel(buffer, 0);
 
-              // Create a buffer source and connect it to the destination
-              final audioBufferSource = audioContext.createBufferSource();
-              audioBufferSource.buffer = audioBuffer;
-              audioBufferSource.connectNode(audioContext.destination!);
+            // Create a buffer source and connect it to the destination
+            final audioBufferSource = audioContext.createBufferSource();
+            audioBufferSource.buffer = audioBuffer;
+            audioBufferSource.connectNode(audioContext.destination!);
 
-              audioBufferSource.start(0);
-            } catch (e, stacktrace) {
-              print('Error playing audio: $e');
-              print('Stack: ${stacktrace}');
+            audioBufferSource.start(0);
+          } catch (e, stacktrace) {
+            print('Error playing audio: $e');
+            print('Stack: ${stacktrace}');
           }
         } catch (e) {
           updateSnackBar(snackBarType: SnackBarTypes.error);
