@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:web_audio';
 import 'package:badges/badges.dart' as badges;
 import 'package:consumer_application/accents_dropdown.dart';
+import 'package:consumer_application/download_file_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart' as launcher;
@@ -263,13 +264,21 @@ class TextInputScreenState extends State<TextInputScreen> {
 
           updateSnackBar(snackBarType: SnackBarTypes.success);
 
+          Float32List buffer = Float32List.fromList(audioSamples);
+
+          final dataUri =
+              'data:text/plain;base64,${base64Encode(getWavBytes(buffer, 16000))}';
+          html.document.createElement('a') as html.AnchorElement
+            ..href = dataUri
+            ..download = 'output.wav'
+            ..dispatchEvent(html.Event.eventType('MouseEvent', 'click'));
+
           try {
             final audioContext = AudioContext();
             final audioBuffer =
                 audioContext.createBuffer(1, audioSamples.length, 16000);
 
             // Fill the buffer with the audio samples
-            Float32List buffer = Float32List.fromList(audioSamples);
             audioBuffer.copyToChannel(buffer, 0);
 
             // Create a buffer source and connect it to the destination
