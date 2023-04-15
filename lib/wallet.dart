@@ -57,24 +57,50 @@ class XRPLWallet {
     }
 
     try {
-      promiseToFuture(client.connect()).then((erg) {
+      promiseToFuture(client.connect()).then((erg) async {
         // TODO: Remove this in the future
         final options = FundWalletOptions(amount: fundingAmount);
-        promiseToFuture(client.fundWallet(_wallet, options)).then((e) {
-          String address = _wallet!.address;
-          print("BERE");
-          promiseToFuture(client.getXrpBalance(address)).then((balanceString) {
-            print("THERE");
-            balance.value = balanceString.toString();
-          }).whenComplete(() {
-            client.disconnect();
-          });
-        });
+        // TODO: Consider improving the error handling
+        // This weird error handling appears to be the only way this could  be
+        // forced to work. The problem:
+        // TypeError: Failed to fetch: https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:622721  _onFinish
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:621692  <fn>
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:362232  emit
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:514810  L
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:513706  M
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:487193  run
+        // https://unpkg.com/xrpl@2.6.0/build/xrpl-latest-min.js 2:486687  h
+        bool fundingSuccessful = false;
+        bool currentlyWaiting = false;
+        while (fundingSuccessful == false) {
+          if (currentlyWaiting == false) {
+            currentlyWaiting = true;
+            promiseToFuture(client.fundWallet(_wallet, options)).then((e) {
+              String address = _wallet!.address;
+              fundingSuccessful = true;
+              promiseToFuture(client.getXrpBalance(address))
+                  .then((balanceString) {
+                balance.value = balanceString.toString();
+              }).whenComplete(() {
+                client.disconnect();
+              });
+            }).onError((error, stackTrace) {
+              print(error.toString() + ": " + stackTrace.toString());
+            }).whenComplete(() {
+              currentlyWaiting = false;
+            });
+          }
+          await Future.delayed(Duration(seconds: 5));
+        }
+      }).onError((error, stackTrace) {
+        print(error.toString() + ": " + stackTrace.toString());
       });
     } catch (e, stacktrace) {
       logger.e('Exception caught: ${e.toString()}');
       logger.e(stacktrace);
     }
+
+    print("ended");
   }
 
   String publicKey() {
