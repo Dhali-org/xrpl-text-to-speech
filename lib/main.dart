@@ -52,7 +52,7 @@ class TextInputScreenState extends State<TextInputScreen> {
   int selectedAccentInt = 7361;
   XRPLWallet? _wallet;
   String _endPoint =
-      "https://kernml-run-3mmgxhct.uc.gateway.dev/d79da1862-3366-4a06-ba72-47a1f8cdb483/run";
+      "https://dhali-prod-run-dauenf0n.uc.gateway.dev/d0bf540f9-00f9-4637-8917-a048758d0d37/run";
   Client client = Client('wss://s.altnet.rippletest.net:51233');
   ValueNotifier<String?> balance = ValueNotifier(null);
   String? mnemonic;
@@ -401,7 +401,7 @@ class TextInputScreenState extends State<TextInputScreen> {
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         launcher.launchUrl(Uri.parse(
-                            "https://dhali-staging.web.app/#/assets/d79da1862-3366-4a06-ba72-47a1f8cdb483"));
+                            "https://dhali-app.web.app/#/assets/d0bf540f9-00f9-4637-8917-a048758d0d37"));
                       }),
               ],
             ))),
