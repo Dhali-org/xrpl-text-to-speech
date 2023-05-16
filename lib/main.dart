@@ -337,14 +337,26 @@ class TextInputScreenState extends State<TextInputScreen> {
       onPressed: () async {
         if (_wallet == null) {
           showDialog(
+              barrierColor: Colors.transparent,
               context: context,
               builder: (context) {
+                SnackBar snackbar;
+                snackbar = const SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text(
+                      "Dhali is currently in alpha and uses test XRP only!"),
+                  duration: Duration(days: 1),
+                );
+                Future(
+                    () => ScaffoldMessenger.of(context).showSnackBar(snackbar));
                 return AlertDialog(
                   actions: [
                     ElevatedButton(
                         onPressed: () {
                           mnemonic = _mnemonicController.text;
                           if (mnemonic != null) {
+                            Future(() => ScaffoldMessenger.of(context)
+                                .showSnackBar(snackbar));
                             setState(() {
                               _wallet = XRPLWallet(mnemonic!, testMode: true);
                             });
@@ -386,7 +398,10 @@ class TextInputScreenState extends State<TextInputScreen> {
         const Text(
           'Text to speech converter',
           textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 52),
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const Spacer(flex: 3),
         badges.Badge(
@@ -438,10 +453,7 @@ class TextInputScreenState extends State<TextInputScreen> {
           Spacer(flex: 1),
           Expanded(child: getHeader(), flex: 3),
           Spacer(flex: 10),
-          Expanded(
-              child: SelectableText('Please activate your wallet!',
-                  style: const TextStyle(fontSize: 25)),
-              flex: 10),
+          Expanded(child: getPleaseActivateYourWalletWidget(), flex: 10),
         ]),
         floatingActionButton: getWalletFloatingActionButton("Get wallet"));
   }
