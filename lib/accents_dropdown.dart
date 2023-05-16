@@ -44,7 +44,10 @@ class _DropdownAccentButtonState extends State<DropdownAccentButton> {
       items: widget.options.keys.map<DropdownMenuItem<String>>((String key) {
         return DropdownMenuItem<String>(
           value: key,
-          child: Text(key),
+          child: Text(
+            key,
+            textAlign: TextAlign.center,
+          ),
         );
       }).toList(),
     );
