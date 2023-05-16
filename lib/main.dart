@@ -14,6 +14,7 @@ import 'package:consumer_application/wallet.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/src/media_type.dart';
 import 'package:logger/logger.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 import 'package:xrpl/xrpl.dart';
 
@@ -73,6 +74,25 @@ class TextInputScreenState extends State<TextInputScreen> {
     return _wallet == null ? getWalletScaffold() : getInferenceScaffold();
   }
 
+  Widget getPleaseActivateYourWalletWidget() {
+    return AnimatedTextKit(
+      animatedTexts: [
+        TypewriterAnimatedText(
+          'Please activate your wallet',
+          textStyle: const TextStyle(
+            fontSize: 32.0,
+            fontWeight: FontWeight.bold,
+          ),
+          speed: const Duration(milliseconds: 50),
+        ),
+      ],
+      repeatForever: true,
+      pause: const Duration(milliseconds: 50),
+      displayFullTextOnTap: true,
+      stopPauseOnTap: true,
+    );
+  }
+
   Widget getInferenceScaffold() {
     return Scaffold(
         body: Column(children: [
@@ -80,8 +100,7 @@ class TextInputScreenState extends State<TextInputScreen> {
           Expanded(child: getHeader(), flex: 3),
           Spacer(flex: 5),
           _wallet == null
-              ? SelectableText('Please activate your wallet!',
-                  style: const TextStyle(fontSize: 25))
+              ? getPleaseActivateYourWalletWidget()
               : ValueListenableBuilder<String?>(
                   valueListenable: _wallet!.balance,
                   builder: (BuildContext context, String? balance, Widget? _) {
@@ -162,6 +181,7 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getInferenceFloatingActionButton() {
     return FloatingActionButton(
+      backgroundColor: const Color.fromARGB(255, 80, 80, 250),
       heroTag: "run",
       tooltip: "Run inference",
       onPressed: () async {
@@ -311,6 +331,7 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getWalletFloatingActionButton(String text) {
     return FloatingActionButton.extended(
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       heroTag: "getWallet",
       tooltip: "Activate or top-up my wallet",
       onPressed: () async {
