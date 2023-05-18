@@ -5,13 +5,13 @@ import 'dart:web_audio';
 import 'package:badges/badges.dart' as badges;
 import 'package:consumer_application/accents_dropdown.dart';
 import 'package:consumer_application/download_file_widget.dart';
-import 'package:consumer_application/wallet_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart' as launcher;
 
 import 'dart:convert';
-import 'package:consumer_application/wallet.dart';
+import 'package:dhali_wallet/dhali_wallet.dart';
+import 'package:dhali_wallet/xrpl_wallet.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/src/media_type.dart';
 import 'package:logger/logger.dart';
@@ -455,6 +455,7 @@ class TextInputScreenState extends State<TextInputScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) => WalletHomeScreen(
+                      textColor: Colors.white,
                       title: "wallet",
                       getWallet: () {
                         return _wallet;
@@ -465,6 +466,8 @@ class TextInputScreenState extends State<TextInputScreen> {
                         });
                         Navigator.pop(context);
                       },
+                      color: const Color(0xFF0000FF),
+                      highlightedColor: const Color(0xFF0000FF),
                     )),
           );
         }

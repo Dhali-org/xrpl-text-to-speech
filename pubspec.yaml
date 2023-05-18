@@ -44,6 +44,10 @@ dependencies:
   url_launcher: ^6.1.10
   animated_text_kit: ^4.2.2
   bip39: ^1.0.6
+  dhali_wallet:
+    git:
+      url: "https://github.com/Dhali-org/Dhali-wallet.git"
+      ref: 0.0.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
