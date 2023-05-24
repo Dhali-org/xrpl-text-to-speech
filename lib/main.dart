@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js' as js;
 import 'dart:typed_data';
 import 'dart:web_audio';
 import 'package:badges/badges.dart' as badges;
@@ -8,6 +9,7 @@ import 'package:consumer_application/download_file_widget.dart';
 import 'package:consumer_application/wallet_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart' as launcher;
 
 import 'dart:convert';
@@ -564,15 +566,40 @@ class TextInputScreenState extends State<TextInputScreen> {
 
   Widget getWalletScaffold() {
     return Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        body: Column(children: [
-          Spacer(flex: 1),
-          Expanded(child: getHeader(), flex: 3),
-          Spacer(flex: 10),
-          Expanded(
-              child: getAnimatedText('Please activate your wallet'), flex: 10),
-        ]),
-        floatingActionButton: getWalletFloatingActionButton("Activate wallet"));
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      appBar: AppBar(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(),
+              child: Container(
+                height: 100, // Or any other height that suits your design
+                child: SvgPicture.asset(
+                    'assets/images/blue-company-logo-clean.svg',
+                    semanticsLabel: 'Acme Logo'),
+              ),
+            ),
+            ListTile(
+                leading: const Icon(Icons.cookie),
+                title: const Text('Cookie Consent Preferences'),
+                onTap: () {
+                  js.context.callMethod('displayPreferenceModal');
+                },
+                hoverColor: Colors.transparent),
+          ],
+        ),
+      ),
+      body: Column(children: [
+        Spacer(flex: 1),
+        Expanded(child: getHeader(), flex: 3),
+        Spacer(flex: 10),
+        Expanded(
+            child: getAnimatedText('Please activate your wallet'), flex: 10),
+      ]),
+      floatingActionButton: getWalletFloatingActionButton("Activate wallet"),
+    );
   }
 
   void updateSnackBar({String? message, SnackBarTypes? snackBarType}) {
